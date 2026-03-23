@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adrena Arena — Team Trading Competitions</title>
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --bg3: #1f2937;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --green: #22c55e;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --text: #f3f4f6;
+  --text2: #9ca3af;
+  --border: #374151;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; min-height:100vh; }
+
+/* Nav */
+.nav { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; }
+.nav-brand { display:flex; align-items:center; gap:10px; font-size:1.3rem; font-weight:700; }
+.nav-brand span { color:var(--accent); }
+.nav-links { display:flex; gap:8px; }
+.nav-btn { background:none; border:1px solid var(--border); color:var(--text2); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:.85rem; transition:all .2s; }
+.nav-btn:hover, .nav-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+/* Layout */
+.container { max-width:1200px; margin:0 auto; padding:24px; }
+
+/* Cards */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; }
+.card h2 { font-size:1.2rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card h3 { font-size:1rem; color:var(--text2); margin-bottom:12px; }
+
+/* Stats Grid */
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+.stat { background:var(--bg3); border-radius:var(--radius); padding:20px; text-align:center; }
+.stat-value { font-size:1.8rem; font-weight:700; color:var(--accent2); }
+.stat-label { font-size:.8rem; color:var(--text2); margin-top:4px; text-transform:uppercase; letter-spacing:1px; }
+
+/* Teams */
+.team-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+.team-card { background:var(--bg3); border-radius:var(--radius); padding:20px; border:1px solid var(--border); transition:all .2s; cursor:pointer; }
+.team-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.team-name { font-size:1.1rem; font-weight:700; margin-bottom:4px; }
+.team-tier { font-size:.75rem; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:8px; }
+.tier-bronze { background:#92400e33; color:#fbbf24; }
+.tier-silver { background:#6b728033; color:#d1d5db; }
+.tier-gold { background:#92400e33; color:#f59e0b; }
+.tier-diamond { background:#6366f133; color:#818cf8; }
+.team-stats { display:flex; gap:16px; font-size:.85rem; color:var(--text2); }
+.team-stat-val { color:var(--text); font-weight:600; }
+
+/* Bracket */
+.bracket { overflow-x:auto; padding:20px 0; }
+.bracket-round { display:inline-flex; flex-direction:column; gap:24px; margin-right:32px; vertical-align:top; min-width:240px; }
+.bracket-round-title { font-size:.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text2); margin-bottom:8px; text-align:center; }
+.match-card { background:var(--bg3); border-radius:8px; padding:12px; border:1px solid var(--border); }
+.match-team { display:flex; justify-content:space-between; padding:6px 0; font-size:.9rem; }
+.match-team.winner { color:var(--green); font-weight:600; }
+.match-team.loser { color:var(--text2); }
+.match-vs { text-align:center; font-size:.7rem; color:var(--text2); padding:2px 0; }
+.match-status { font-size:.7rem; text-align:center; margin-top:6px; padding:2px 8px; border-radius:4px; }
+.status-active { background:#22c55e22; color:var(--green); }
+.status-pending { background:#f59e0b22; color:var(--gold); }
+.status-completed { background:#6366f122; color:var(--accent2); }
+
+/* Tournament List */
+.tourn-card { background:var(--bg3); border-radius:var(--radius); padding:20px; border:1px solid var(--border); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+.tourn-info h3 { font-size:1.05rem; font-weight:600; margin-bottom:4px; }
+.tourn-meta { font-size:.8rem; color:var(--text2); display:flex; gap:16px; }
+.tourn-status { padding:4px 12px; border-radius:6px; font-size:.8rem; font-weight:600; }
+
+/* Forms */
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:.85rem; color:var(--text2); margin-bottom:4px; }
+.form-group input, .form-group select { width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; font-size:.9rem; }
+.form-group input:focus { outline:none; border-color:var(--accent); }
+.btn { background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:.9rem; font-weight:600; transition:all .2s; }
+.btn:hover { background:var(--accent2); }
+.btn-outline { background:none; border:1px solid var(--border); color:var(--text2); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.btn-sm { padding:6px 12px; font-size:.8rem; }
+
+/* Live indicator */
+.live-dot { width:8px; height:8px; background:var(--green); border-radius:50%; display:inline-block; animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+/* Table */
+table { width:100%; border-collapse:collapse; }
+th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.9rem; }
+th { color:var(--text2); font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; }
+.pnl-pos { color:var(--green); }
+.pnl-neg { color:var(--red); }
+
+/* Empty state */
+.empty { text-align:center; padding:40px; color:var(--text2); }
+.empty-icon { font-size:2.5rem; margin-bottom:12px; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:100; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:28px; max-width:460px; width:90%; max-height:80vh; overflow-y:auto; }
+.modal h2 { margin-bottom:20px; }
+
+/* Responsive */
+@media (max-width:768px) {
+  .nav { flex-direction:column; gap:12px; }
+  .stats { grid-template-columns:1fr 1fr; }
+  .team-grid { grid-template-columns:1fr; }
+  .tourn-card { flex-direction:column; gap:12px; align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">🏟️ <span>Adrena</span> Arena</div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-btn" onclick="showPage('tournaments')">Tournaments</button>
+    <button class="nav-btn" onclick="showPage('teams')">Teams</button>
+    <button class="nav-btn" onclick="showPage('leaderboard')">Leaderboard</button>
+  </div>
+</nav>
+
+<div class="container" id="app">
+  <!-- Dashboard -->
+  <div id="page-dashboard">
+    <div class="stats">
+      <div class="stat"><div class="stat-value" id="stat-teams">0</div><div class="stat-label">Active Teams</div></div>
+      <div class="stat"><div class="stat-value" id="stat-tournaments">0</div><div class="stat-label">Tournaments</div></div>
+      <div class="stat"><div class="stat-value" id="stat-matches">0</div><div class="stat-label">Live Matches</div></div>
+      <div class="stat"><div class="stat-value" id="stat-prize">$0</div><div class="stat-label">Total Prizes</div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="live-dot"></span> Live Matches</h2>
+      <div id="live-matches"><div class="empty"><div class="empty-icon">⚔️</div>No live matches right now</div></div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 Recent Results</h2>
+      <div id="recent-results"><div class="empty"><div class="empty-icon">📊</div>No completed matches yet</div></div>
+    </div>
+  </div>
+
+  <!-- Tournaments -->
+  <div id="page-tournaments" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2>📅 Tournaments</h2>
+      <button class="btn btn-sm" onclick="showCreateTournament()">+ Create Tournament</button>
+    </div>
+    <div id="tournaments-list"><div class="empty"><div class="empty-icon">📅</div>No tournaments yet</div></div>
+  </div>
+
+  <!-- Teams -->
+  <div id="page-teams" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2>👥 Teams</h2>
+      <button class="btn btn-sm" onclick="showCreateTeam()">+ Create Team</button>
+    </div>
+    <div class="team-grid" id="teams-list"></div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div id="page-leaderboard" style="display:none">
+    <div class="card">
+      <h2>🏆 Arena Leaderboard</h2>
+      <table>
+        <thead><tr><th>#</th><th>Team</th><th>Tier</th><th>Rank</th><th>W</th><th>L</th><th>Members</th></tr></thead>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Create Team Modal -->
+<div class="modal-overlay" id="modal-create-team">
+  <div class="modal">
+    <h2>Create Team</h2>
+    <div class="form-group"><label>Team Name</label><input id="ct-name" placeholder="Enter team name"></div>
+    <div class="form-group"><label>Your Wallet Address</label><input id="ct-wallet" placeholder="Solana wallet address"></div>
+    <div class="form-group"><label>Display Name (optional)</label><input id="ct-display" placeholder="Your display name"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('modal-create-team')">Cancel</button>
+      <button class="btn" onclick="createTeam()">Create Team</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Tournament Modal -->
+<div class="modal-overlay" id="modal-create-tournament">
+  <div class="modal">
+    <h2>Create Tournament</h2>
+    <div class="form-group"><label>Tournament Name</label><input id="ctourn-name" placeholder="e.g. Arena Season 1"></div>
+    <div class="form-group"><label>Tier</label>
+      <select id="ctourn-tier"><option value="open">Open</option><option value="bronze">Bronze</option><option value="silver">Silver</option><option value="gold">Gold</option><option value="diamond">Diamond</option></select>
+    </div>
+    <div class="form-group"><label>Max Teams</label><input id="ctourn-max" type="number" value="16"></div>
+    <div class="form-group"><label>Prize Pool (USDC)</label><input id="ctourn-prize" type="number" value="0"></div>
+    <div class="form-group"><label>Registration Start</label><input id="ctourn-regstart" type="datetime-local"></div>
+    <div class="form-group"><label>Registration End</label><input id="ctourn-regend" type="datetime-local"></div>
+    <div class="form-group"><label>Tournament Start</label><input id="ctourn-start" type="datetime-local"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('modal-create-tournament')">Cancel</button>
+      <button class="btn" onclick="createTournament()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let ws = null;
+
+// WebSocket
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'score_update') refreshDashboard();
+    if (msg.type === 'match_complete') { refreshDashboard(); refreshTournaments(); }
+  };
+  ws.onclose = () => setTimeout(connectWS, 3000);
+}
+
+// Navigation
+function showPage(page) {
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (page === 'dashboard') refreshDashboard();
+  if (page === 'tournaments') refreshTournaments();
+  if (page === 'teams') refreshTeams();
+  if (page === 'leaderboard') refreshLeaderboard();
+}
+
+// API helpers
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  return res.json();
+}
+
+// Dashboard
+async function refreshDashboard() {
+  try {
+    const [teams, tournaments, leaderboard] = await Promise.all([
+      api('/arena/teams?limit=100'),
+      api('/arena/tournaments'),
+      api('/arena/leaderboard?limit=5')
+    ]);
+
+    document.getElementById('stat-teams').textContent = teams.teams?.length || 0;
+    document.getElementById('stat-tournaments').textContent = tournaments.tournaments?.length || 0;
+
+    const active = tournaments.tournaments?.filter(t => ['group_stage','elimination','finals'].includes(t.status)) || [];
+    document.getElementById('stat-matches').textContent = active.length;
+
+    const totalPrize = (tournaments.tournaments || []).reduce((s, t) => s + Number(t.prize_pool_usdc || 0), 0);
+    document.getElementById('stat-prize').textContent = '$' + totalPrize.toLocaleString();
+
+    // Live matches
+    const liveEl = document.getElementById('live-matches');
+    if (active.length === 0) {
+      liveEl.innerHTML = '<div class="empty"><div class="empty-icon">⚔️</div>No live matches right now</div>';
+    } else {
+      let html = '';
+      for (const t of active) {
+        const scores = await api(`/arena/tournaments/${t.id}/scores`);
+        const liveMatches = (scores.matches || []).filter(m => m.status === 'active');
+        for (const m of liveMatches) {
+          html += `<div class="match-card">
+            <div class="match-team ${m.team_a_score >= m.team_b_score ? 'winner' : ''}">
+              <span>${m.team_a_name || 'TBD'}</span><span>${(m.team_a_score || 0).toFixed(2)}%</span>
+            </div>
+            <div class="match-vs">VS</div>
+            <div class="match-team ${m.team_b_score > m.team_a_score ? 'winner' : ''}">
+              <span>${m.team_b_name || 'TBD'}</span><span>${(m.team_b_score || 0).toFixed(2)}%</span>
+            </div>
+            <div class="match-status status-active"><span class="live-dot"></span> LIVE — ${t.name}</div>
+          </div>`;
+        }
+      }
+      liveEl.innerHTML = html || '<div class="empty"><div class="empty-icon">⚔️</div>No live matches right now</div>';
+    }
+  } catch (err) {
+    console.error('Dashboard error:', err);
+  }
+}
+
+// Tournaments
+async function refreshTournaments() {
+  try {
+    const data = await api('/arena/tournaments');
+    const el = document.getElementById('tournaments-list');
+    if (!data.tournaments?.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>No tournaments yet. Create one!</div>';
+      return;
+    }
+    el.innerHTML = data.tournaments.map(t => {
+      const statusColors = { registration: 'status-pending', group_stage: 'status-active', elimination: 'status-active', finals: 'status-active', completed: 'status-completed' };
+      return `<div class="tourn-card">
+        <div class="tourn-info">
+          <h3>${t.name}</h3>
+          <div class="tourn-meta">
+            <span>Tier: ${t.tier}</span>
+            <span>Teams: ${t.team_count || 0}/${t.max_teams}</span>
+            <span>Prize: $${Number(t.prize_pool_usdc || 0).toLocaleString()}</span>
+          </div>
+        </div>
+        <span class="tourn-status ${statusColors[t.status] || ''}">${t.status.replace('_', ' ').toUpperCase()}</span>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Tournaments error:', err);
+  }
+}
+
+// Teams
+async function refreshTeams() {
+  try {
+    const data = await api('/arena/teams');
+    const el = document.getElementById('teams-list');
+    if (!data.teams?.length) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👥</div>No teams yet. Create the first one!</div>';
+      return;
+    }
+    el.innerHTML = data.teams.map(t => `
+      <div class="team-card" onclick="viewTeam(${t.id})">
+        <div class="team-name">${t.name}</div>
+        <span class="team-tier tier-${t.tier}">${t.tier.toUpperCase()}</span>
+        <div class="team-stats">
+          <span>👥 <span class="team-stat-val">${t.member_count || 0}</span></span>
+          <span>🏆 <span class="team-stat-val">${t.wins || 0}W</span></span>
+          <span>📊 <span class="team-stat-val">${t.arena_rank || 1000}</span></span>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Teams error:', err);
+  }
+}
+
+// Leaderboard
+async function refreshLeaderboard() {
+  try {
+    const data = await api('/arena/leaderboard');
+    const el = document.getElementById('leaderboard-body');
+    if (!data.leaderboard?.length) {
+      el.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No teams ranked yet</td></tr>';
+      return;
+    }
+    el.innerHTML = data.leaderboard.map((t, i) => {
+      const medals = ['🥇','🥈','🥉'];
+      return `<tr>
+        <td>${medals[i] || i + 1}</td>
+        <td><strong>${t.name}</strong></td>
+        <td><span class="team-tier tier-${t.tier}">${t.tier}</span></td>
+        <td>${t.arena_rank}</td>
+        <td class="pnl-pos">${t.wins}</td>
+        <td class="pnl-neg">${t.losses}</td>
+        <td>${t.member_count || 0}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.error('Leaderboard error:', err);
+  }
+}
+
+// Actions
+function showCreateTeam() { document.getElementById('modal-create-team').classList.add('show'); }
+function showCreateTournament() { document.getElementById('modal-create-tournament').classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+async function createTeam() {
+  const name = document.getElementById('ct-name').value.trim();
+  const wallet = document.getElementById('ct-wallet').value.trim();
+  const displayName = document.getElementById('ct-display').value.trim();
+  if (!name || !wallet) return alert('Name and wallet required');
+
+  const data = await api('/arena/teams', { method: 'POST', body: JSON.stringify({ name, captainWallet: wallet, displayName }) });
+  if (data.success) {
+    alert(`Team "${name}" created! Invite code: ${data.team.invite_code}`);
+    closeModal('modal-create-team');
+    refreshTeams();
+  } else {
+    alert(data.error || 'Failed to create team');
+  }
+}
+
+async function createTournament() {
+  const body = {
+    name: document.getElementById('ctourn-name').value,
+    tier: document.getElementById('ctourn-tier').value,
+    maxTeams: parseInt(document.getElementById('ctourn-max').value),
+    prizePool: parseFloat(document.getElementById('ctourn-prize').value),
+    registrationStart: new Date(document.getElementById('ctourn-regstart').value).toISOString(),
+    registrationEnd: new Date(document.getElementById('ctourn-regend').value).toISOString(),
+    tournamentStart: new Date(document.getElementById('ctourn-start').value).toISOString()
+  };
+  const data = await api('/arena/tournaments', { method: 'POST', body: JSON.stringify(body) });
+  if (data.success) {
+    alert('Tournament created!');
+    closeModal('modal-create-tournament');
+    refreshTournaments();
+  } else {
+    alert(data.error || 'Failed');
+  }
+}
+
+async function viewTeam(id) {
+  const data = await api(`/arena/teams/${id}`);
+  if (data.success) {
+    const t = data.team;
+    alert(`Team: ${t.name}\nTier: ${t.tier}\nRank: ${t.arena_rank}\nInvite Code: ${t.invite_code}\nMembers: ${t.members.map(m => m.display_name || m.wallet_address.slice(0,8)).join(', ')}`);
+  }
+}
+
+// Init
+connectWS();
+refreshDashboard();
+</script>
+</body>
+</html>
