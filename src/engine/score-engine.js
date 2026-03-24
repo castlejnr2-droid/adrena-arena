@@ -111,8 +111,9 @@ async function calculateTeamScore(teamId, match) {
       const positions = await adrena.getPositions(member.wallet_address);
 
       // Filter positions opened during this match
+      // Adrena API fields: entry_date, pnl, entry_collateral_amount, collateral_amount, volume, symbol, side, status
       const matchPositions = positions.filter(p => {
-        const openTime = new Date(p.openedAt || p.created_at || 0);
+        const openTime = new Date(p.entry_date || p.created_at || 0);
         return openTime >= new Date(match.round_start);
       });
 
@@ -122,23 +123,23 @@ async function calculateTeamScore(teamId, match) {
       let positionsOpened = matchPositions.length;
       let memberVolume = 0;
 
-      for (const pos of positions) {
-        const collateral = Number(pos.collateralUsd || pos.collateral_usd || 0);
-        const pnl = Number(pos.pnlUsd || pos.pnl_usd || pos.unrealizedPnl || 0);
-        const size = Number(pos.sizeUsd || pos.size_usd || 0);
+      for (const pos of matchPositions) {
+        const collateral = Number(pos.collateral_amount || pos.entry_collateral_amount || 0);
+        const pnl = Number(pos.pnl || 0);
+        const volume = Number(pos.volume || pos.entry_size || 0);
 
         totalCollateral += collateral;
         totalPnl += pnl;
-        memberVolume += size;
+        memberVolume += volume;
 
-        if (pos.tokenSymbol || pos.token_symbol) {
-          assetsTraded.add(pos.tokenSymbol || pos.token_symbol);
+        if (pos.symbol) {
+          assetsTraded.add(pos.symbol);
         }
 
         // Late position weighting
         if (match.round_end) {
           const roundEnd = new Date(match.round_end);
-          const posOpen = new Date(pos.openedAt || pos.created_at || 0);
+          const posOpen = new Date(pos.entry_date || pos.created_at || 0);
           const minutesBefore = (roundEnd - posOpen) / 60000;
           if (minutesBefore < LATE_WINDOW_MIN && minutesBefore >= 0) {
             // Weight late positions at 50%
@@ -160,10 +161,11 @@ async function calculateTeamScore(teamId, match) {
         wallet: member.wallet_address,
         name: member.display_name || member.wallet_address.slice(0, 8) + '...',
         pnlPct: Math.round(pnlPct * 100) / 100,
-        pnlUsd: Math.round(totalPnl * 100) / 100,
-        collateral: Math.round(totalCollateral * 100) / 100,
+        pnlUsd: Math.round(totalPnl * 1000) / 1000,
+        collateral: Math.round(totalCollateral * 1000) / 1000,
         volume: Math.round(memberVolume * 100) / 100,
         positions: positionsOpened,
+        assetsTraded: [...assetsTraded],
         isActive
       };
 
